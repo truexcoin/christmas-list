@@ -22,6 +22,41 @@ A VPS gives you full control and avoids the complexity of Cloudflare Pages adapt
 
 ## 🚀 Step-by-Step Deployment
 
+### 🎯 Quick Setup (Automated - Recommended)
+
+If you want to set everything up automatically, use the setup script:
+
+```bash
+# SSH into your VPS
+ssh root@your-server-ip
+
+# Clone the repository
+cd /var/www
+git clone https://github.com/truexcoin/christmas-list.git
+cd christmas-list
+
+# Run the automated setup script
+chmod +x setup-vps.sh
+./setup-vps.sh
+```
+
+The script will:
+- ✅ Install Node.js, PM2, Nginx, Redis
+- ✅ Clone and set up your app
+- ✅ Create .env file (asks for your password and API key)
+- ✅ Build the application
+- ✅ Start with PM2
+- ✅ Configure Nginx
+- ✅ Set up firewall
+
+**That's it!** Your app will be running in ~5-10 minutes.
+
+---
+
+### 📝 Manual Setup (Step-by-Step)
+
+If you prefer to set things up manually or understand each step:
+
 ### Step 1: Initial Server Setup
 
 SSH into your VPS:
