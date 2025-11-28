@@ -1,0 +1,78 @@
+[
+  {
+    "id": "1",
+    "name": "Sony WH-1000XM5 Headphones",
+    "price": "$348",
+    "image": "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=800",
+    "description": "Industry-leading noise canceling wireless headphones with exceptional sound quality and 30-hour battery life. Perfect for music, calls, and travel.",
+    "priority": "high",
+    "stores": [
+      {
+        "name": "Amazon",
+        "url": "https://amazon.com"
+      },
+      {
+        "name": "Best Buy",
+        "url": "https://bestbuy.com"
+      },
+      {
+        "name": "Sony Store",
+        "url": "https://sony.com"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Kindle Paperwhite",
+    "price": "$139",
+    "image": "https://images.unsplash.com/photo-1592496431122-2349e0fbc666?w=800",
+    "description": "The thinnest, lightest Kindle Paperwhite yet with a flush-front design and 300 ppi glare-free display.",
+    "priority": "medium",
+    "stores": [
+      {
+        "name": "Amazon",
+        "url": "https://amazon.com"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Lego Architecture Set",
+    "price": "$89",
+    "image": "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800",
+    "description": "Build iconic architecture with this detailed LEGO set. Great for display and a relaxing building experience.",
+    "priority": "low",
+    "stores": [
+      {
+        "name": "LEGO Store",
+        "url": "https://lego.com"
+      },
+      {
+        "name": "Target",
+        "url": "https://target.com"
+      }
+    ]
+  },
+  {
+    "name": "Ninja CREAMi Ice Cream Maker",
+    "price": "$199.99",
+    "image": "https://m.media-amazon.com/images/I/61knlkvcklL.jpg",
+    "description": "Create delicious and personalized ice cream, sorbet, milkshakes, and more right at home with the Ninja CREAMi. This innovative machine transforms frozen bases into creamy treats in minutes, allowing for endless flavor combinations and healthy alternatives.",
+    "priority": "high",
+    "stores": [
+      {
+        "name": "Ninja Kitchen",
+        "url": "https://www.ninjakitchen.com/products/ninja-creami-ice-cream-maker-zidNC301"
+      },
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/Ninja-NC301-Creami-Ice-Cream/dp/B09H12L68N"
+      },
+      {
+        "name": "Target",
+        "url": "https://www.target.com/p/ninja-creami-ice-cream-maker/-/A-84804436"
+      }
+    ],
+    "id": "1764272271730"
+  }
+]
