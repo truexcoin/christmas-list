@@ -36,9 +36,9 @@ export async function GET() {
       }, { status: 500 });
     }
 
-    // Try to get a model - use gemini-pro (most compatible)
+    // Try to get a model - use gemini-2.5-flash (latest flash model)
     let model;
-    let modelName = 'gemini-pro';
+    let modelName = 'gemini-2.5-flash';
     try {
       model = genAI.getGenerativeModel({ model: modelName });
     } catch (modelError) {

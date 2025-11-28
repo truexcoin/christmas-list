@@ -25,9 +25,8 @@ export async function POST(request) {
       );
     }
 
-    // Use gemini-pro (most stable and widely available)
-    // Note: gemini-1.5-flash may not be available in all API versions
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    // Use gemini-2.5-flash (latest flash model)
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `You are a helpful shopping assistant. Find the best deals and prices for the following product:
 
