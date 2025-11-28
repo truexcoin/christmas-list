@@ -46,6 +46,13 @@ apt install -y redis-server
 systemctl enable redis-server
 systemctl start redis-server
 
+# Verify Redis is running
+if redis-cli ping | grep -q "PONG"; then
+    echo "✅ Redis is running and ready!"
+else
+    echo "⚠️  Redis might not be running properly"
+fi
+
 echo ""
 echo "📦 Step 6/8: Installing Git..."
 apt install -y git
@@ -156,6 +163,8 @@ echo "📊 Useful commands:"
 echo "   pm2 status              - Check app status"
 echo "   pm2 logs christmas-list - View logs"
 echo "   pm2 restart christmas-list - Restart app"
+echo "   redis-cli ping          - Test Redis connection"
+echo "   systemctl status redis-server - Check Redis status"
 echo ""
 echo "🔄 To update in the future, use: ./deploy.sh"
 
