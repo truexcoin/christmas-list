@@ -1,3 +1,39 @@
+const fs = require('fs');
+const path = require('path');
+
+// Load environment variables from .env file
+function loadEnvFile(envPath) {
+  const env = {
+    NODE_ENV: 'production',
+    PORT: 3000,
+    HOSTNAME: '0.0.0.0',
+  };
+
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    envContent.split('\n').forEach(line => {
+      line = line.trim();
+      // Skip comments and empty lines
+      if (line && !line.startsWith('#')) {
+        const match = line.match(/^([^=]+)=(.*)$/);
+        if (match) {
+          const key = match[1].trim();
+          const value = match[2].trim().replace(/^["']|["']$/g, ''); // Remove quotes
+          if (key && value) {
+            env[key] = value;
+          }
+        }
+      }
+    });
+  }
+
+  return env;
+}
+
+// Use absolute path for .env file (PM2 cwd)
+const envPath = '/var/www/christmas-list/.env';
+const env = loadEnvFile(envPath);
+
 module.exports = {
   apps: [
     {
@@ -10,12 +46,7 @@ module.exports = {
       cwd: '/var/www/christmas-list',
       instances: 1,
       exec_mode: 'fork',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 3000,
-        HOSTNAME: '0.0.0.0',
-      },
-      env_file: '/var/www/christmas-list/.env',
+      env: env,
       error_file: '/var/www/christmas-list/logs/pm2-error.log',
       out_file: '/var/www/christmas-list/logs/pm2-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
