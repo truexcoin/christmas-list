@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { searchProductImage, searchProductImagePexels, searchProductImageUnsplash } from '@/lib/imageSearch';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyDTnLjjBnpc8nIJFT5Vmr_uL4o9_KfW1XQ';
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
+const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
@@ -68,11 +71,31 @@ Only respond with valid JSON, no markdown or additional text.`;
       );
     }
 
-    // Return without image - user can add their own
+    // Search for product image
+    let imageUrl = '';
+    const searchTerm = parsedResponse.imageSearchTerm || parsedResponse.name;
+    
+    if (searchTerm) {
+      // Try Unsplash API first (if key provided), then Pexels, then fallback
+      if (UNSPLASH_ACCESS_KEY) {
+        imageUrl = await searchProductImageUnsplash(searchTerm, UNSPLASH_ACCESS_KEY);
+      }
+      
+      if (!imageUrl && PEXELS_API_KEY) {
+        imageUrl = await searchProductImagePexels(searchTerm, PEXELS_API_KEY);
+      }
+      
+      // Fallback to Unsplash source API (no key needed, but less reliable)
+      if (!imageUrl) {
+        imageUrl = await searchProductImage(searchTerm);
+      }
+    }
+
+    // Return with image if found
     return NextResponse.json({
       ...parsedResponse,
-      image: '', // Leave empty for user to add
-      imageSearchTerm: undefined,
+      image: imageUrl || '', // Include image URL if found
+      imageSearchTerm: undefined, // Remove from response
     });
   } catch (error) {
     console.error('Gemini API error:', error);

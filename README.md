@@ -61,6 +61,13 @@ REDIS_URL=redis://localhost:6379
 # Google Gemini API Key (optional - for AI features)
 # Get a free API key at: https://makersuite.google.com/app/apikey
 GEMINI_API_KEY=your-gemini-api-key-here
+
+# Image Search API Keys (optional - for automatic product images)
+# The app will work without these, but images will be lower quality
+# Get Pexels API key (free, 200 requests/hour): https://www.pexels.com/api/
+PEXELS_API_KEY=your-pexels-api-key-here
+# Get Unsplash API key (free tier available): https://unsplash.com/developers
+UNSPLASH_ACCESS_KEY=your-unsplash-access-key-here
 ```
 
 4. **Run the development server**
@@ -155,10 +162,12 @@ git push origin main
 
    | Variable | Description | Required |
    |----------|-------------|----------|
-   | `ADMIN_PASSWORD` | Admin panel password | ✅ Yes |
-   | `JWT_SECRET` | Secret for JWT tokens | ✅ Yes |
-   | `REDIS_URL` | Redis connection URL | ❌ Optional |
-   | `GEMINI_API_KEY` | Google Gemini API key | ❌ Optional |
+| `ADMIN_PASSWORD` | Admin panel password | ✅ Yes |
+| `JWT_SECRET` | Secret for JWT tokens | ✅ Yes |
+| `REDIS_URL` | Redis connection URL | ❌ Optional |
+| `GEMINI_API_KEY` | Google Gemini API key | ❌ Optional |
+| `PEXELS_API_KEY` | Pexels API key for product images | ❌ Optional |
+| `UNSPLASH_ACCESS_KEY` | Unsplash API key for product images | ❌ Optional |
 
 4. **Deploy**
 

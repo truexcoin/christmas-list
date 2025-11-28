@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { requireAuth } from '@/lib/auth';
+import { searchProductImage, searchProductImagePexels, searchProductImageUnsplash } from '@/lib/imageSearch';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyDTnLjjBnpc8nIJFT5Vmr_uL4o9_KfW1XQ';
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
+const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
@@ -106,7 +109,39 @@ Only respond with valid JSON, no markdown or additional text.`;
       );
     }
 
-    return NextResponse.json(parsedResponse);
+    // Search for images for each recommendation
+    const recommendationsWithImages = await Promise.all(
+      parsedResponse.recommendations.map(async (rec) => {
+        let imageUrl = '';
+        const searchTerm = rec.imageSearchTerm || rec.name;
+        
+        if (searchTerm) {
+          // Try Unsplash API first (if key provided), then Pexels, then fallback
+          if (UNSPLASH_ACCESS_KEY) {
+            imageUrl = await searchProductImageUnsplash(searchTerm, UNSPLASH_ACCESS_KEY);
+          }
+          
+          if (!imageUrl && PEXELS_API_KEY) {
+            imageUrl = await searchProductImagePexels(searchTerm, PEXELS_API_KEY);
+          }
+          
+          // Fallback to Unsplash source API (no key needed)
+          if (!imageUrl) {
+            imageUrl = await searchProductImage(searchTerm);
+          }
+        }
+
+        return {
+          ...rec,
+          image: imageUrl || '',
+          imageSearchTerm: undefined, // Remove from response
+        };
+      })
+    );
+
+    return NextResponse.json({
+      recommendations: recommendationsWithImages,
+    });
   } catch (error) {
     console.error('Error generating recommendations:', error);
     return NextResponse.json(
