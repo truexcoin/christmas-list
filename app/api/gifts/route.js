@@ -3,6 +3,8 @@ import { getGifts, addGift } from '@/lib/store';
 import { requireAuth } from '@/lib/auth';
 import { getKVFromRequest } from '@/lib/kv';
 
+export const runtime = 'edge';
+
 // GET all gifts (public)
 export async function GET(request) {
   try {

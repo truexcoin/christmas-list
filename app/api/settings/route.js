@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getSettings, saveSettings } from '@/lib/store';
 import { getKVFromRequest } from '@/lib/kv';
 
+export const runtime = 'edge';
+
 // GET settings (public)
 export async function GET(request) {
   try {

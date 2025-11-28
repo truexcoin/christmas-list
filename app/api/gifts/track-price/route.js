@@ -3,6 +3,8 @@ import { trackPrice } from '@/lib/store';
 import { requireAuth } from '@/lib/auth';
 import { getKVFromRequest } from '@/lib/kv';
 
+export const runtime = 'edge';
+
 // POST - Track price for a gift (auth required)
 export async function POST(request) {
   try {
