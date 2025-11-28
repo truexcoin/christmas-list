@@ -4,16 +4,14 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 # KV Namespace binding
-# Create the KV namespace in Cloudflare Dashboard first, then add the binding here
-# For now, we'll use a placeholder - you'll need to create the KV namespace
-# and update this with the actual binding name
+# This is used for local development with `wrangler pages dev`
+# For production, configure the binding in Cloudflare Pages Dashboard:
+# Settings → Functions → KV Namespace Bindings
 [[kv_namespaces]]
 binding = "KV"
-id = "your-kv-namespace-id"
+id = "d185102d68fb4a28b1e1ad810d24daed"
 
-# To create a KV namespace:
-# 1. Go to Cloudflare Dashboard → Workers & Pages → KV
-# 2. Create a namespace (e.g., "christmas-list-kv")
-# 3. Copy the namespace ID
-# 4. Replace "your-kv-namespace-id" above with the actual ID
+# Optional: preview_id for local development
+# Uncomment and add your preview namespace ID if you have one
+# preview_id = "your-preview-namespace-id"
 
