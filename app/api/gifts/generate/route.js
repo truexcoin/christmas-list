@@ -57,20 +57,48 @@ Only respond with valid JSON, no markdown or additional text.`;
 
     console.log(`[AI Generate] Generating content for: "${name}"`);
     
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    
-    if (!response) {
-      throw new Error('No response from Gemini API');
+    let result, response, text;
+    try {
+      result = await model.generateContent(prompt);
+      response = await result.response;
+      
+      if (!response) {
+        throw new Error('No response from Gemini API');
+      }
+      
+      text = response.text();
+      
+      if (!text || text.trim().length === 0) {
+        throw new Error('Empty response from Gemini API');
+      }
+      
+      console.log(`[AI Generate] Received response (${text.length} chars)`);
+    } catch (apiError) {
+      console.error('[AI Generate] Gemini API call failed:', apiError);
+      
+      // Extract more specific error information
+      let errorMsg = apiError.message || 'Unknown error';
+      
+      // Check for common Gemini API errors
+      if (apiError.statusCode) {
+        errorMsg = `API Error ${apiError.statusCode}: ${errorMsg}`;
+      }
+      
+      if (errorMsg.includes('API_KEY_INVALID') || errorMsg.includes('401')) {
+        throw new Error('Invalid Gemini API key. Please check your GEMINI_API_KEY environment variable.');
+      }
+      
+      if (errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('rate limit')) {
+        throw new Error('API rate limit exceeded. Please try again in a few moments.');
+      }
+      
+      if (errorMsg.includes('400') || errorMsg.includes('Bad Request')) {
+        throw new Error(`Invalid request to Gemini API: ${errorMsg}`);
+      }
+      
+      // Re-throw with more context
+      throw new Error(`Gemini API error: ${errorMsg}`);
     }
-    
-    const text = response.text();
-    
-    if (!text || text.trim().length === 0) {
-      throw new Error('Empty response from Gemini API');
-    }
-    
-    console.log(`[AI Generate] Received response (${text.length} chars)`);
 
     // Try to parse the JSON response
     let parsedResponse;
@@ -147,19 +175,16 @@ Only respond with valid JSON, no markdown or additional text.`;
       message: error.message,
       stack: error.stack,
       name: error.name,
+      cause: error.cause,
     });
     
-    // Provide more specific error messages
-    let errorMessage = 'Failed to generate gift details. Please try again.';
+    // The error message should already be specific from our error handling above
+    // But provide a fallback if it's not
+    let errorMessage = error.message || 'Failed to generate gift details. Please try again.';
     
-    if (error.message?.includes('API_KEY')) {
-      errorMessage = 'Invalid or missing Gemini API key. Please check your GEMINI_API_KEY environment variable.';
-    } else if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
-      errorMessage = 'API rate limit exceeded. Please try again in a few moments.';
-    } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
-      errorMessage = 'Network error. Please check your internet connection and try again.';
-    } else if (error.message) {
-      errorMessage = `Error: ${error.message}`;
+    // Ensure we're not exposing internal details in production
+    if (process.env.NODE_ENV === 'production' && errorMessage.includes('stack')) {
+      errorMessage = 'Failed to generate gift details. Please check your API key and try again.';
     }
     
     return NextResponse.json(

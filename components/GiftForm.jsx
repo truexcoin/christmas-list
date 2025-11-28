@@ -80,12 +80,19 @@ const GiftForm = ({ gift, onSubmit, onCancel, isLoading }) => {
         body: JSON.stringify({ name: formData.name }),
       });
 
+      const responseData = await res.json();
+
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || 'Failed to generate');
+        // Use the specific error message from the API
+        const errorMsg = responseData.error || `Server error (${res.status}): Failed to generate`;
+        console.error('[GiftForm] Generate API error:', {
+          status: res.status,
+          error: errorMsg,
+        });
+        throw new Error(errorMsg);
       }
 
-      const data = await res.json();
+      const data = responseData;
       
       setFormData({
         name: data.name || formData.name,
