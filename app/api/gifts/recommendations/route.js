@@ -3,11 +3,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { requireAuth } from '@/lib/auth';
 import { searchProductImage, searchProductImagePexels, searchProductImageUnsplash } from '@/lib/imageSearch';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyDTnLjjBnpc8nIJFT5Vmr_uL4o9_KfW1XQ';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+// Initialize only if API key is provided
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 // POST - Get AI recommendations based on existing gifts
 export async function POST(request) {
@@ -38,7 +39,16 @@ export async function POST(request) {
       description: gift.description || '',
     }));
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // Check if API key is set
+    if (!GEMINI_API_KEY || !genAI) {
+      return NextResponse.json(
+        { error: 'Gemini API key is not configured. Please set GEMINI_API_KEY environment variable.' },
+        { status: 500 }
+      );
+    }
+
+    // Use gemini-1.5-flash (most stable and widely available)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `You are a helpful gift recommendation assistant. Analyze the following Christmas wishlist and suggest 8-10 additional gift ideas that would complement the existing items.
 
@@ -82,9 +92,22 @@ Format your response as JSON only:
 
 Only respond with valid JSON, no markdown or additional text.`;
 
+    console.log(`[AI Recommendations] Generating recommendations for ${gifts.length} gifts...`);
+    
     const result = await model.generateContent(prompt);
     const response = await result.response;
+    
+    if (!response) {
+      throw new Error('No response from Gemini API');
+    }
+    
     const text = response.text();
+    
+    if (!text || text.trim().length === 0) {
+      throw new Error('Empty response from Gemini API');
+    }
+    
+    console.log(`[AI Recommendations] Received response (${text.length} chars)`);
 
     // Try to parse the JSON response
     let parsedResponse;
@@ -93,10 +116,10 @@ Only respond with valid JSON, no markdown or additional text.`;
       const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       parsedResponse = JSON.parse(cleanText);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      console.error('Raw response:', text);
+      console.error('[AI Recommendations] JSON parse error:', parseError);
+      console.error('[AI Recommendations] Raw response text:', text);
       return NextResponse.json(
-        { error: 'Failed to parse AI recommendations. Please try again.' },
+        { error: `Failed to parse AI response: ${parseError.message}. Please try again.` },
         { status: 500 }
       );
     }
@@ -110,8 +133,10 @@ Only respond with valid JSON, no markdown or additional text.`;
     }
 
     // Search for images for each recommendation
+    console.log(`[Image Search] Fetching images for ${parsedResponse.recommendations.length} recommendations...`);
+    
     const recommendationsWithImages = await Promise.all(
-      parsedResponse.recommendations.map(async (rec) => {
+      parsedResponse.recommendations.map(async (rec, index) => {
         let imageUrl = '';
         const searchTerm = rec.imageSearchTerm || rec.name;
         
@@ -129,6 +154,12 @@ Only respond with valid JSON, no markdown or additional text.`;
           if (!imageUrl) {
             imageUrl = await searchProductImage(searchTerm);
           }
+          
+          if (imageUrl) {
+            console.log(`[Image Search] ✅ Recommendation ${index + 1}: Found image for "${rec.name}"`);
+          } else {
+            console.log(`[Image Search] ⚠️ Recommendation ${index + 1}: No image for "${rec.name}"`);
+          }
         }
 
         return {
@@ -138,14 +169,35 @@ Only respond with valid JSON, no markdown or additional text.`;
         };
       })
     );
+    
+    console.log(`[Image Search] Completed image search for all recommendations`);
 
     return NextResponse.json({
       recommendations: recommendationsWithImages,
     });
   } catch (error) {
-    console.error('Error generating recommendations:', error);
+    console.error('[AI Recommendations] Error:', error);
+    console.error('[AI Recommendations] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to generate recommendations. Please try again.';
+    
+    if (error.message?.includes('API_KEY')) {
+      errorMessage = 'Invalid or missing Gemini API key. Please check your GEMINI_API_KEY environment variable.';
+    } else if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
+      errorMessage = 'API rate limit exceeded. Please try again in a few moments.';
+    } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+      errorMessage = 'Network error. Please check your internet connection and try again.';
+    } else if (error.message) {
+      errorMessage = `Error: ${error.message}`;
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to generate recommendations. Please try again.' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -156,11 +156,13 @@ export default function AdminPage() {
         setEditingGift(null);
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to save gift');
+        const errorMsg = error.error || 'Failed to save gift';
+        console.error('[Admin] Save failed:', errorMsg);
+        alert(errorMsg);
       }
     } catch (err) {
-      console.error('Save failed:', err);
-      alert('Failed to save gift');
+      console.error('[Admin] Save failed:', err);
+      alert(err.message || 'Failed to save gift. Please check your connection and try again.');
     } finally {
       setActionLoading(false);
     }

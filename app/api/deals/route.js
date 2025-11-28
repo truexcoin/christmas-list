@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyDTnLjjBnpc8nIJFT5Vmr_uL4o9_KfW1XQ';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+// Initialize only if API key is provided
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 export async function POST(request) {
   try {
@@ -16,7 +17,16 @@ export async function POST(request) {
       );
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // Check if API key is set
+    if (!GEMINI_API_KEY || !genAI) {
+      return NextResponse.json(
+        { error: 'Gemini API key is not configured. Please set GEMINI_API_KEY environment variable.' },
+        { status: 500 }
+      );
+    }
+
+    // Use gemini-1.5-flash (most stable and widely available)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `You are a helpful shopping assistant. Find the best deals and prices for the following product:
 
@@ -53,9 +63,22 @@ Format your response as JSON with this structure:
 
 Only respond with valid JSON, no markdown or additional text.`;
 
+    console.log(`[AI Deals] Searching for deals: "${name}"`);
+    
     const result = await model.generateContent(prompt);
     const response = await result.response;
+    
+    if (!response) {
+      throw new Error('No response from Gemini API');
+    }
+    
     const text = response.text();
+    
+    if (!text || text.trim().length === 0) {
+      throw new Error('Empty response from Gemini API');
+    }
+    
+    console.log(`[AI Deals] Received response (${text.length} chars)`);
 
     // Try to parse the JSON response
     let parsedResponse;
@@ -76,9 +99,28 @@ Only respond with valid JSON, no markdown or additional text.`;
 
     return NextResponse.json(parsedResponse);
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('[AI Deals] Error:', error);
+    console.error('[AI Deals] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to fetch deals. Please try again.';
+    
+    if (error.message?.includes('API_KEY')) {
+      errorMessage = 'Invalid or missing Gemini API key. Please check your GEMINI_API_KEY environment variable.';
+    } else if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
+      errorMessage = 'API rate limit exceeded. Please try again in a few moments.';
+    } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+      errorMessage = 'Network error. Please check your internet connection and try again.';
+    } else if (error.message) {
+      errorMessage = `Error: ${error.message}`;
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch deals. Please try again.' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
