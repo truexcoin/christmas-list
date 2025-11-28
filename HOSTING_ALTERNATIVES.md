@@ -6,18 +6,32 @@
 - **Price:** FREE (generous limits)
 - **Custom Domain:** ✅ FREE (unlimited)
 - **Next.js Support:** ✅ Native (best support)
-- **Limits:**
+- **Free Tier Limits:**
   - 100GB bandwidth/month
   - 100 hours build time/month
   - Unlimited requests
+- **What Happens When You Exceed Free Limits:**
+  - **Bandwidth:** Deployments paused until next month (NO charges)
+  - **Build Time:** Deployments paused until next month (NO charges)
+  - **No surprise charges** - they pause, not bill you
+- **Paid Plans (if you need more):**
+  - **Pro Plan:** $20/month
+    - 1TB bandwidth/month
+    - 6,000 build minutes/month
+    - Team collaboration
+    - Advanced analytics
+  - **Overage Costs (Pro Plan only):**
+    - Extra bandwidth: $40 per additional 1TB
+    - Extra build minutes: $0.36 per 1,000 minutes
 - **Pros:**
   - Made by Next.js creators - perfect compatibility
   - Automatic deployments from GitHub
   - Free SSL certificates
   - Edge functions included
   - Great performance
+  - **No surprise charges on free tier** (just pauses)
 - **Cons:**
-  - Bandwidth limits on free tier
+  - Bandwidth limits on free tier (but pauses, doesn't charge)
 - **Best for:** Next.js apps (like yours!)
 - **Link:** [vercel.com](https://vercel.com)
 
