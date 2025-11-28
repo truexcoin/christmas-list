@@ -38,12 +38,30 @@ id = "your-actual-namespace-id-here"
 3. Connect your GitHub account
 4. Select the `christmas-list` repository
 5. Configure build settings:
-   - **Framework preset:** Next.js
+   - **Framework preset:** None (or Other - don't use Next.js preset)
    - **Build command:** `npm run pages:build`
    - **Build output directory:** `.vercel/output/static`
-   - **Deploy command:** `wrangler pages deploy .vercel/output/static --project-name=christmas-list`
+   - **Deploy command:** (leave empty)
    - **Root directory:** `/` (leave empty)
+   
+   **CRITICAL:** 
+   - Don't use "Next.js" framework preset - it conflicts with the adapter
+   - Use "None" or "Other" framework preset
+   - The build output MUST be `.vercel/output/static` (after adapter runs)
+   
 6. Click **Save and Deploy**
+   
+   **If you see "Hello World":**
+   - Check build logs - make sure `@cloudflare/next-on-pages` completed
+   - Verify `.vercel/output/static` directory exists after build
+   - Make sure `_worker.js` is in the output directory
+   - Try changing framework preset to "None"
+   
+   **If you get an internal error:**
+   - Try refreshing the page
+   - Check that your project name matches exactly
+   - Try without the `--project-name` flag: `wrangler pages deploy .vercel/output/static`
+   - Or contact Cloudflare support
 
 ### Option B: Via Wrangler CLI
 
