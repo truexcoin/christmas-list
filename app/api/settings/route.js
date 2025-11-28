@@ -1,38 +1,17 @@
 import { NextResponse } from 'next/server';
-import { createClient } from 'redis';
-
-const SETTINGS_KEY = 'christmas-list-settings';
-
-const defaultSettings = {
-  emoji: '🎄',
-  title: 'Christmas Wishlist',
-  subtitle: 'Click on any gift to see more details and where to buy',
-};
-
-let redis = null;
-
-async function getRedis() {
-  if (!redis && process.env.REDIS_URL) {
-    redis = await createClient({ url: process.env.REDIS_URL }).connect();
-  }
-  return redis;
-}
+import { getSettings, saveSettings } from '@/lib/store';
+import { getKVFromRequest } from '@/lib/kv';
 
 // GET settings (public)
-export async function GET() {
+export async function GET(request) {
   try {
-    const client = await getRedis();
-    
-    if (client) {
-      const data = await client.get(SETTINGS_KEY);
-      if (data) {
-        return NextResponse.json(JSON.parse(data));
-      }
-    }
-    
-    return NextResponse.json(defaultSettings);
+    const kv = await getKVFromRequest(request);
+    const settings = await getSettings(kv);
+    return NextResponse.json(settings);
   } catch (error) {
     console.error('Error fetching settings:', error);
+    const { getSettings } = await import('@/lib/store');
+    const defaultSettings = await getSettings(null);
     return NextResponse.json(defaultSettings);
   }
 }
@@ -40,11 +19,11 @@ export async function GET() {
 // PUT update settings (should be auth protected in production)
 export async function PUT(request) {
   try {
-    const client = await getRedis();
+    const kv = await getKVFromRequest(request);
     
-    if (!client) {
+    if (!kv) {
       return NextResponse.json(
-        { error: 'Database not connected' },
+        { error: 'KV not available. Make sure KV binding is configured.' },
         { status: 500 }
       );
     }
@@ -52,8 +31,7 @@ export async function PUT(request) {
     const updates = await request.json();
     
     // Get current settings
-    const currentData = await client.get(SETTINGS_KEY);
-    const currentSettings = currentData ? JSON.parse(currentData) : defaultSettings;
+    const currentSettings = await getSettings(kv);
     
     // Merge updates
     const newSettings = {
@@ -61,7 +39,7 @@ export async function PUT(request) {
       ...updates,
     };
     
-    await client.set(SETTINGS_KEY, JSON.stringify(newSettings));
+    await saveSettings(newSettings, kv);
     
     return NextResponse.json(newSettings);
   } catch (error) {

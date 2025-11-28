@@ -1,0 +1,19 @@
+name = "christmas-list"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+# KV Namespace binding
+# Create the KV namespace in Cloudflare Dashboard first, then add the binding here
+# For now, we'll use a placeholder - you'll need to create the KV namespace
+# and update this with the actual binding name
+[[kv_namespaces]]
+binding = "KV"
+id = "your-kv-namespace-id"
+
+# To create a KV namespace:
+# 1. Go to Cloudflare Dashboard → Workers & Pages → KV
+# 2. Create a namespace (e.g., "christmas-list-kv")
+# 3. Copy the namespace ID
+# 4. Replace "your-kv-namespace-id" above with the actual ID
+

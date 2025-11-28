@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getGifts, addGift } from '@/lib/store';
 import { requireAuth } from '@/lib/auth';
+import { getKVFromRequest } from '@/lib/kv';
 
 // GET all gifts (public)
-export async function GET() {
+export async function GET(request) {
   try {
-    const gifts = await getGifts();
+    const kv = await getKVFromRequest(request);
+    const gifts = await getGifts(kv);
     return NextResponse.json(gifts);
   } catch (error) {
     console.error('Error fetching gifts:', error);
@@ -47,6 +49,7 @@ export async function POST(request) {
       }
     }
 
+    const kv = await getKVFromRequest(request);
     const newGift = await addGift({
       name: giftData.name,
       price: giftData.price,
@@ -54,7 +57,7 @@ export async function POST(request) {
       description: giftData.description || '',
       priority: giftData.priority || 'medium',
       stores: giftData.stores || [],
-    });
+    }, kv);
 
     return NextResponse.json(newGift, { status: 201 });
   } catch (error) {
