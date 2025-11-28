@@ -41,8 +41,10 @@ id = "your-actual-namespace-id-here"
    - **Framework preset:** None (or Other - don't use Next.js preset)
    - **Build command:** `npm run pages:build`
    - **Build output directory:** `.vercel/output/static`
-   - **Deploy command:** (leave empty)
+   - **Deploy command:** `npx wrangler pages deploy .vercel/output/static --project-name=christmas-list`
    - **Root directory:** `/` (leave empty)
+   
+   **Note:** Use `npx wrangler` (not just `wrangler`) since it's not globally installed in the build environment.
    
    **CRITICAL:** 
    - Don't use "Next.js" framework preset - it conflicts with the adapter
