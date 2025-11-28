@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getSettings, saveSettings } from '@/lib/store';
-import { getKVFromRequest } from '@/lib/kv';
-
-export const runtime = 'edge';
 
 // GET settings (public)
-export async function GET(request) {
+export async function GET() {
   try {
-    const kv = await getKVFromRequest(request);
-    const settings = await getSettings(kv);
+    const settings = await getSettings();
     return NextResponse.json(settings);
   } catch (error) {
     console.error('Error fetching settings:', error);
     const { getSettings } = await import('@/lib/store');
-    const defaultSettings = await getSettings(null);
+    const defaultSettings = await getSettings();
     return NextResponse.json(defaultSettings);
   }
 }
@@ -21,19 +17,10 @@ export async function GET(request) {
 // PUT update settings (should be auth protected in production)
 export async function PUT(request) {
   try {
-    const kv = await getKVFromRequest(request);
-    
-    if (!kv) {
-      return NextResponse.json(
-        { error: 'KV not available. Make sure KV binding is configured.' },
-        { status: 500 }
-      );
-    }
-    
     const updates = await request.json();
     
     // Get current settings
-    const currentSettings = await getSettings(kv);
+    const currentSettings = await getSettings();
     
     // Merge updates
     const newSettings = {
@@ -41,7 +28,7 @@ export async function PUT(request) {
       ...updates,
     };
     
-    await saveSettings(newSettings, kv);
+    await saveSettings(newSettings);
     
     return NextResponse.json(newSettings);
   } catch (error) {

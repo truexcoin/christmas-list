@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getGift, updateGift, deleteGift } from '@/lib/store';
 import { requireAuth } from '@/lib/auth';
-import { getKVFromRequest } from '@/lib/kv';
-
-export const runtime = 'edge';
 
 // GET single gift (public)
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
-    const kv = await getKVFromRequest(request);
-    const gift = await getGift(id, kv);
+    const gift = await getGift(id);
 
     if (!gift) {
       return NextResponse.json(
@@ -53,8 +49,7 @@ export async function PUT(request, { params }) {
       }
     }
 
-    const kv = await getKVFromRequest(request);
-    const updated = await updateGift(id, updates, kv);
+    const updated = await updateGift(id, updates);
 
     if (!updated) {
       return NextResponse.json(
@@ -95,9 +90,8 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    const kv = await getKVFromRequest(request);
     const { trackPrice } = await import('@/lib/store');
-    const updated = await trackPrice(id, price, source || 'manual', kv);
+    const updated = await trackPrice(id, price, source || 'manual');
 
     if (!updated) {
       return NextResponse.json(
@@ -129,8 +123,7 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = await params;
-    const kv = await getKVFromRequest(request);
-    const deleted = await deleteGift(id, kv);
+    const deleted = await deleteGift(id);
 
     if (!deleted) {
       return NextResponse.json(

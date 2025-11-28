@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { trackPrice } from '@/lib/store';
 import { requireAuth } from '@/lib/auth';
-import { getKVFromRequest } from '@/lib/kv';
-
-export const runtime = 'edge';
 
 // POST - Track price for a gift (auth required)
 export async function POST(request) {
@@ -26,8 +23,7 @@ export async function POST(request) {
       );
     }
 
-    const kv = await getKVFromRequest(request);
-    const updated = await trackPrice(id, price, source || 'manual', kv);
+    const updated = await trackPrice(id, price, source || 'manual');
 
     if (!updated) {
       return NextResponse.json(
