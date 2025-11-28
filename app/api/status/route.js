@@ -1,20 +1,31 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  // Check if Vercel KV is available
-  let kvAvailable = false;
+  // Check what storage is available
+  let storageType = 'none';
+  let storageAvailable = false;
+  
+  // Check Vercel KV
   try {
     const kvModule = await import('@vercel/kv');
     if (kvModule && kvModule.kv) {
-      kvAvailable = true;
+      storageType = 'vercel-kv';
+      storageAvailable = true;
     }
   } catch (e) {
-    // KV not available
+    // Vercel KV not available
+  }
+  
+  // Check Redis
+  if (!storageAvailable && process.env.REDIS_URL) {
+    storageType = 'redis';
+    storageAvailable = true;
   }
   
   return NextResponse.json({
-    storage: 'Vercel KV',
-    kvAvailable: kvAvailable,
+    storage: storageType,
+    storageAvailable: storageAvailable,
+    redisUrl: process.env.REDIS_URL ? 'Set ✓' : 'Not set ✗',
     environment: process.env.NODE_ENV || 'production',
   });
 }
