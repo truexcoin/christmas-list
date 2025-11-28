@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "pages:build": "next build && npx @cloudflare/next-on-pages",
+    "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static --project-name=christmas-list",
     "pages:dev": "npx wrangler pages dev .vercel/output/static"
   },
   "dependencies": {

@@ -25,10 +25,15 @@ Cloudflare Pages now has better Next.js support. Here's how to deploy:
 
 3. **Configure Build Settings**
    - **Framework preset:** Next.js
+   - **Build command:** `npm run pages:build`
+   - **Build output directory:** `.vercel/output/static`
+   - **Deploy command:** `wrangler pages deploy .vercel/output/static --project-name=christmas-list`
+   - **Root directory:** `/` (leave empty)
+   
+   **Alternative (if deploy command not required):**
    - **Build command:** `npm run build`
    - **Build output directory:** `.next`
-   - **Root directory:** `/` (leave empty)
-   - **⚠️ IMPORTANT:** Do NOT set a custom deploy command. Leave it empty and let Cloudflare Pages handle deployment automatically.
+   - **Deploy command:** (leave empty)
 
 4. **Set Environment Variables**
    Go to Settings → Environment Variables and add:
