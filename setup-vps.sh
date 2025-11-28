@@ -86,17 +86,41 @@ PORT=3000
 EOF
 
 echo ""
-echo "🔨 Building application..."
-npm run build
+echo "📁 Creating logs directory..."
+mkdir -p logs
 
 echo ""
-echo "🚀 Starting application with PM2..."
-pm2 start npm --name "christmas-list" -- start
+echo "🔨 Building application (standalone mode)..."
+npm run build
+
+# Verify standalone build was created
+if [ ! -d ".next/standalone" ]; then
+    echo "⚠️  Standalone build not found, using regular build"
+fi
+
+echo ""
+echo "🚀 Starting application with PM2 (using ecosystem config)..."
+# Stop and delete existing instance if it exists
+pm2 delete christmas-list 2>/dev/null || true
+pm2 start ecosystem.config.js
 pm2 save
 
 # Setup PM2 to start on boot
 PM2_STARTUP=$(pm2 startup | grep -oP 'sudo env PATH=.*$')
-eval $PM2_STARTUP
+if [ ! -z "$PM2_STARTUP" ]; then
+    eval $PM2_STARTUP
+fi
+
+echo ""
+echo "⏳ Waiting for app to start..."
+sleep 3
+
+# Health check
+if curl -f http://localhost:3000/api/status > /dev/null 2>&1; then
+    echo "✅ App is running and healthy!"
+else
+    echo "⚠️  App might not be fully started yet. Check logs with: pm2 logs christmas-list"
+fi
 
 echo ""
 echo "🌐 Step 8/8: Configuring Nginx..."

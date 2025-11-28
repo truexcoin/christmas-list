@@ -44,10 +44,11 @@ The script will:
 - ✅ Install Node.js, PM2, Nginx, Redis
 - ✅ Clone and set up your app
 - ✅ Create .env file (asks for your password and API key)
-- ✅ Build the application
-- ✅ Start with PM2
+- ✅ Build the application in standalone mode (optimized for VPS)
+- ✅ Start with PM2 using ecosystem config
 - ✅ Configure Nginx
 - ✅ Set up firewall
+- ✅ Run health checks
 
 **That's it!** Your app will be running in ~5-10 minutes.
 
@@ -160,19 +161,36 @@ Save and exit (Ctrl+X, then Y, then Enter).
 
 ### Step 9: Build the Application
 
+The app uses Next.js standalone mode for optimized VPS deployment:
+
 ```bash
 npm run build
 ```
 
+This creates a `.next/standalone` directory with only necessary files, reducing deployment size.
+
 ### Step 10: Start with PM2
 
+The app includes a PM2 ecosystem configuration file for better process management:
+
 ```bash
-pm2 start npm --name "christmas-list" -- start
+# Create logs directory
+mkdir -p logs
+
+# Start with ecosystem config
+pm2 start ecosystem.config.js
 pm2 save
 pm2 startup
 ```
 
 The last command will show you a command to run - copy and run it to enable PM2 on boot.
+
+**Alternative:** You can also use the npm scripts:
+```bash
+npm run pm2:start    # Start app
+npm run pm2:restart  # Restart app
+npm run pm2:stop     # Stop app
+```
 
 ### Step 11: Configure Nginx
 
@@ -301,6 +319,15 @@ pm2 stop christmas-list       # Stop app
 pm2 delete christmas-list     # Remove from PM2
 pm2 logs christmas-list       # View logs
 pm2 monit                     # Monitor resources
+pm2 status                    # Check status of all apps
+```
+
+**Or use npm scripts:**
+```bash
+npm run pm2:start    # Start app
+npm run pm2:restart  # Restart app
+npm run pm2:stop     # Stop app
+npm run pm2:delete   # Remove from PM2
 ```
 
 ### Nginx Commands
@@ -377,6 +404,17 @@ systemctl restart redis-server
 pm2 logs christmas-list  # Check logs
 cd /var/www/christmas-list
 npm run build  # Rebuild
+pm2 restart christmas-list
+# Or: npm run pm2:restart
+```
+
+### Standalone build issues
+
+If you see errors about missing files:
+```bash
+cd /var/www/christmas-list
+rm -rf .next
+npm run build
 pm2 restart christmas-list
 ```
 
