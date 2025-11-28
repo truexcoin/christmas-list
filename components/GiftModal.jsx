@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Extract background color using smart algorithm (optimized)
@@ -257,6 +257,7 @@ const GiftModal = ({ gift, isOpen, onClose, initialBgColor }) => {
   const [showPriceHistory, setShowPriceHistory] = useState(false);
   const imgRef = useRef(null);
 
+
   const priorityClass = {
     high: 'priority-high',
     medium: 'priority-medium',
@@ -509,6 +510,7 @@ const GiftModal = ({ gift, isOpen, onClose, initialBgColor }) => {
                         src={processedImageUrl} 
                         alt={gift.name}
                         layoutId={`card-image-${gift.id}`}
+                        style={{ backgroundColor: 'transparent' }}
                       />
                     ) : (
                       <motion.img 
@@ -516,6 +518,7 @@ const GiftModal = ({ gift, isOpen, onClose, initialBgColor }) => {
                         alt={gift.name}
                         crossOrigin="anonymous"
                         layoutId={`card-image-${gift.id}`}
+                        style={{ backgroundColor: 'transparent' }}
                       />
                     )}
                   </>
@@ -536,6 +539,8 @@ const GiftModal = ({ gift, isOpen, onClose, initialBgColor }) => {
                   padding: '1.5rem',
                   maxHeight: '55vh',
                   overflowY: 'auto',
+                  background: 'var(--bg-card)',
+                  marginTop: 0,
                 }}
               >
                 {/* Header */}
@@ -623,12 +628,12 @@ const GiftModal = ({ gift, isOpen, onClose, initialBgColor }) => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        style={{
-                          marginTop: '0.75rem',
-                          background: 'var(--bg-card)',
-                          borderRadius: '12px',
-                          padding: '1rem',
-                          border: '1px solid var(--border-subtle)',
+                          style={{
+                            marginTop: '0.75rem',
+                            background: 'var(--bg-card)',
+                            borderRadius: '12px',
+                            padding: '1rem',
+                            border: '1px solid var(--border-subtle)',
                           maxHeight: '300px',
                           overflowY: 'auto',
                         }}
@@ -670,22 +675,22 @@ const GiftModal = ({ gift, isOpen, onClose, initialBgColor }) => {
                                 {isIncrease ? '📈' : isDecrease ? '📉' : '➡️'}
                               </span>
                               <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-                                  Price Change
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: '0.9rem',
-                                    fontWeight: 600,
-                                    color: isIncrease 
-                                      ? 'var(--priority-high)' 
-                                      : isDecrease 
-                                      ? '#22c55e' 
-                                      : 'var(--text-secondary)',
-                                  }}
-                                >
-                                  {isIncrease ? '+' : ''}{change.toFixed(2)} ({percentChange}%)
-                                </div>
+                                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                                    Price Change
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: '0.9rem',
+                                      fontWeight: 600,
+                                      color: isIncrease 
+                                        ? 'var(--priority-high)' 
+                                        : isDecrease 
+                                        ? '#22c55e' 
+                                        : 'var(--text-secondary)',
+                                    }}
+                                  >
+                                    {isIncrease ? '+' : ''}{change.toFixed(2)} ({percentChange}%)
+                                  </div>
                               </div>
                             </div>
                           );

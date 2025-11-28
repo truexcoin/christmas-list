@@ -24,6 +24,14 @@ export default function AdminPage() {
   const [recommendations, setRecommendations] = useState(null);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(false);
+  const [showDataManagement, setShowDataManagement] = useState(false);
+  const [exportData, setExportData] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [importJson, setImportJson] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [clearExisting, setClearExisting] = useState(false);
+  const [importError, setImportError] = useState('');
+  const [importSuccess, setImportSuccess] = useState('');
 
   // Check authentication on mount
   useEffect(() => {
@@ -276,6 +284,104 @@ export default function AdminPage() {
         block: 'start',
       });
     }, 100);
+  };
+
+  const handleExportData = async () => {
+    setIsExporting(true);
+    setImportError('');
+    setImportSuccess('');
+    try {
+      const res = await fetch('/api/export');
+      if (!res.ok) {
+        throw new Error('Failed to export data');
+      }
+      const data = await res.json();
+      setExportData(JSON.stringify(data, null, 2));
+    } catch (err) {
+      console.error('Export failed:', err);
+      setImportError('Failed to export data. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleCopyToClipboard = () => {
+    if (exportData) {
+      navigator.clipboard.writeText(exportData);
+      setImportSuccess('Copied to clipboard!');
+      setTimeout(() => setImportSuccess(''), 3000);
+    }
+  };
+
+  const handleDownloadJson = () => {
+    if (exportData) {
+      const blob = new Blob([exportData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `christmas-list-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setImportSuccess('File downloaded!');
+      setTimeout(() => setImportSuccess(''), 3000);
+    }
+  };
+
+  const handleImportData = async () => {
+    if (!importJson.trim()) {
+      setImportError('Please paste JSON data');
+      return;
+    }
+
+    setIsImporting(true);
+    setImportError('');
+    setImportSuccess('');
+
+    try {
+      const data = JSON.parse(importJson);
+      
+      if (!data.gifts || !Array.isArray(data.gifts)) {
+        throw new Error('Invalid JSON format: gifts must be an array');
+      }
+
+      const res = await fetch('/api/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gifts: data.gifts,
+          settings: data.settings || null,
+          clearExisting,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to import data');
+      }
+
+      const result = await res.json();
+      setImportSuccess(`Successfully imported ${result.imported.gifts} gift(s)!`);
+      setImportJson('');
+      setClearExisting(false);
+      
+      // Refresh gifts list
+      await fetchGifts();
+      if (data.settings) {
+        await fetchSettings();
+      }
+
+      setTimeout(() => {
+        setImportSuccess('');
+        setShowDataManagement(false);
+      }, 3000);
+    } catch (err) {
+      console.error('Import failed:', err);
+      setImportError(err.message || 'Failed to import data. Please check the JSON format.');
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   if (isLoading) {
@@ -884,6 +990,276 @@ export default function AdminPage() {
               ))}
             </AnimatePresence>
           )}
+        </div>
+
+        {/* Data Management */}
+        <div style={{ paddingBottom: '2rem' }}>
+          <button
+            onClick={() => setShowDataManagement(!showDataManagement)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1rem',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '12px',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              width: '100%',
+              justifyContent: 'space-between',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              📋 Export/Import Data
+            </span>
+            <span style={{ 
+              transform: showDataManagement ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}>
+              ▼
+            </span>
+          </button>
+
+          <AnimatePresence>
+            {showDataManagement && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div
+                  style={{
+                    marginTop: '1rem',
+                    padding: '1.5rem',
+                    background: 'var(--bg-card)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-subtle)',
+                  }}
+                >
+                  {/* Export Section */}
+                  <div style={{ marginBottom: '2rem' }}>
+                    <h3
+                      style={{
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        color: 'var(--text-primary)',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      📤 Export Data
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: '0.85rem',
+                        color: 'var(--text-secondary)',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      Export all your gifts and settings as JSON. You can copy it or download as a file.
+                    </p>
+                    <button
+                      onClick={handleExportData}
+                      disabled={isExporting}
+                      style={{
+                        padding: '0.75rem 1.5rem',
+                        background: isExporting
+                          ? 'var(--bg-secondary)'
+                          : 'linear-gradient(135deg, var(--accent-primary) 0%, #c49a3a 100%)',
+                        border: 'none',
+                        borderRadius: '12px',
+                        color: 'white',
+                        cursor: isExporting ? 'wait' : 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        marginBottom: '1rem',
+                        opacity: isExporting ? 0.7 : 1,
+                      }}
+                    >
+                      {isExporting ? 'Exporting...' : 'Export Data'}
+                    </button>
+
+                    {exportData && (
+                      <div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '0.5rem',
+                            marginBottom: '0.75rem',
+                          }}
+                        >
+                          <button
+                            onClick={handleCopyToClipboard}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: 'var(--text-primary)',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: 500,
+                            }}
+                          >
+                            📋 Copy to Clipboard
+                          </button>
+                          <button
+                            onClick={handleDownloadJson}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: 'var(--text-primary)',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: 500,
+                            }}
+                          >
+                            💾 Download JSON File
+                          </button>
+                        </div>
+                        <textarea
+                          value={exportData}
+                          readOnly
+                          style={{
+                            width: '100%',
+                            minHeight: '200px',
+                            padding: '1rem',
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '12px',
+                            color: 'var(--text-primary)',
+                            fontFamily: 'monospace',
+                            fontSize: '0.85rem',
+                            resize: 'vertical',
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Import Section */}
+                  <div>
+                    <h3
+                      style={{
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        color: 'var(--text-primary)',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      📥 Import Data
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: '0.85rem',
+                        color: 'var(--text-secondary)',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      Paste JSON data to import gifts and settings. Make sure the JSON is valid.
+                    </p>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          color: 'var(--text-secondary)',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={clearExisting}
+                          onChange={(e) => setClearExisting(e.target.checked)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                        Clear existing data before import
+                      </label>
+                    </div>
+                    <textarea
+                      value={importJson}
+                      onChange={(e) => {
+                        setImportJson(e.target.value);
+                        setImportError('');
+                        setImportSuccess('');
+                      }}
+                      placeholder='Paste JSON data here...'
+                      style={{
+                        width: '100%',
+                        minHeight: '200px',
+                        padding: '1rem',
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '12px',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'monospace',
+                        fontSize: '0.85rem',
+                        resize: 'vertical',
+                        marginBottom: '1rem',
+                      }}
+                    />
+                    {importError && (
+                      <div
+                        style={{
+                          padding: '0.75rem',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.2)',
+                          borderRadius: '8px',
+                          color: 'var(--priority-high)',
+                          fontSize: '0.85rem',
+                          marginBottom: '1rem',
+                        }}
+                      >
+                        ❌ {importError}
+                      </div>
+                    )}
+                    {importSuccess && (
+                      <div
+                        style={{
+                          padding: '0.75rem',
+                          background: 'rgba(34, 197, 94, 0.1)',
+                          border: '1px solid rgba(34, 197, 94, 0.2)',
+                          borderRadius: '8px',
+                          color: '#22c55e',
+                          fontSize: '0.85rem',
+                          marginBottom: '1rem',
+                        }}
+                      >
+                        ✅ {importSuccess}
+                      </div>
+                    )}
+                    <button
+                      onClick={handleImportData}
+                      disabled={isImporting || !importJson.trim()}
+                      style={{
+                        padding: '0.75rem 1.5rem',
+                        background: isImporting || !importJson.trim()
+                          ? 'var(--bg-secondary)'
+                          : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                        border: 'none',
+                        borderRadius: '12px',
+                        color: 'white',
+                        cursor: isImporting || !importJson.trim() ? 'not-allowed' : 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        opacity: isImporting || !importJson.trim() ? 0.6 : 1,
+                      }}
+                    >
+                      {isImporting ? 'Importing...' : 'Import Data'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Page Settings */}

@@ -388,15 +388,17 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  gap: 0;
 }
 
 .modal-image {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: #ffffff;
   flex-shrink: 0;
   transition: background-color 0.3s ease;
+  margin: 0;
+  padding: 0;
 }
 
 .modal-image img {
@@ -405,7 +407,7 @@ body {
   object-fit: contain;
   object-position: center;
   padding: 10px;
-  background: #ffffff;
+  background: transparent;
 }
 
 .modal-image-placeholder {
