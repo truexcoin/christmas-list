@@ -94,8 +94,19 @@ echo "🔨 Building application (standalone mode)..."
 npm run build
 
 # Verify standalone build was created
-if [ ! -d ".next/standalone" ]; then
-    echo "⚠️  Standalone build not found, using regular build"
+if [ -d ".next/standalone" ]; then
+    echo "✅ Standalone build created successfully"
+    # Next.js standalone includes server.js and necessary files
+    # Static files (.next/static) and public folder are referenced relatively
+    # Ensure they exist in the expected locations
+    if [ ! -d ".next/static" ]; then
+        echo "⚠️  Warning: .next/static not found"
+    fi
+    if [ ! -d "public" ]; then
+        echo "⚠️  Warning: public folder not found"
+    fi
+else
+    echo "⚠️  Standalone build not found, will use regular next start"
 fi
 
 echo ""

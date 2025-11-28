@@ -2,8 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'christmas-list',
-      // For standalone builds, use the server.js from standalone directory
-      // For regular builds, this will fallback to npm start in setup scripts
+      // Next.js standalone build creates .next/standalone/server.js
+      // But we use 'next start' which works with both standalone and regular builds
+      // Next.js automatically detects standalone and uses it if available
       script: 'node_modules/next/dist/bin/next',
       args: 'start',
       cwd: '/var/www/christmas-list',

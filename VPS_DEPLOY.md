@@ -418,6 +418,25 @@ npm run build
 pm2 restart christmas-list
 ```
 
+### Filesystem permissions
+
+If you see permission errors:
+```bash
+# Ensure proper ownership
+sudo chown -R $USER:$USER /var/www/christmas-list
+
+# Ensure logs directory is writable
+chmod 755 /var/www/christmas-list/logs
+```
+
+### Static files not loading
+
+If images or static assets don't load:
+- Verify `public/` folder exists: `ls -la /var/www/christmas-list/public`
+- Verify `.next/static/` exists: `ls -la /var/www/christmas-list/.next/static`
+- Check Nginx is proxying correctly (should proxy all requests to port 3000)
+- Check PM2 logs: `pm2 logs christmas-list`
+
 ### Nginx 502 Bad Gateway
 
 - Check if app is running: `pm2 status`
