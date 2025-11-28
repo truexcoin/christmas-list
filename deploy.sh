@@ -42,16 +42,14 @@ fi
 
 echo ""
 echo "🔄 Restarting application with PM2..."
-# Stop existing instance
-pm2 stop christmas-list 2>/dev/null || true
 
-# Check if standalone build exists, otherwise use npm start
-if [ -f ".next/standalone/server.js" ]; then
-    echo "✅ Using standalone build (optimized)"
-    pm2 start ecosystem.config.js || pm2 restart christmas-list
+# Check if process exists
+if pm2 list | grep -q "christmas-list"; then
+    echo "✅ Process exists, restarting..."
+    pm2 restart christmas-list
 else
-    echo "⚠️  Standalone build not found, using npm start"
-    pm2 start npm --name "christmas-list" -- start || pm2 restart christmas-list
+    echo "⚠️  Process not found, starting new instance..."
+    pm2 start ecosystem.config.js || pm2 start npm --name "christmas-list" -- start
 fi
 
 # Save PM2 configuration
