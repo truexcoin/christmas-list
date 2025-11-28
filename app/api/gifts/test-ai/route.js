@@ -36,14 +36,15 @@ export async function GET() {
       }, { status: 500 });
     }
 
-    // Try to get a model
+    // Try to get a model - use gemini-pro (most compatible)
     let model;
+    let modelName = 'gemini-pro';
     try {
-      model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      model = genAI.getGenerativeModel({ model: modelName });
     } catch (modelError) {
       return NextResponse.json({
         status: 'error',
-        message: `Failed to get model: ${modelError.message}`,
+        message: `Failed to get model '${modelName}': ${modelError.message}`,
         hasKey: true,
       }, { status: 500 });
     }

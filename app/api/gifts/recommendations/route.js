@@ -47,8 +47,9 @@ export async function POST(request) {
       );
     }
 
-    // Use gemini-1.5-flash (most stable and widely available)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Use gemini-pro (most stable and widely available)
+    // Note: gemini-1.5-flash may not be available in all API versions
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     const prompt = `You are a helpful gift recommendation assistant. Analyze the following Christmas wishlist and suggest 8-10 additional gift ideas that would complement the existing items.
 
