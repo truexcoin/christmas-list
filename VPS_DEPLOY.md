@@ -129,8 +129,10 @@ cd christmas-list
 ### Step 7: Install Dependencies
 
 ```bash
-npm install --production
+npm install
 ```
+
+**Note:** We install all dependencies (including dev dependencies) because Tailwind CSS and PostCSS are needed for the build process, even though they're marked as dev dependencies.
 
 ### Step 8: Set Up Environment Variables
 
@@ -281,10 +283,12 @@ To update your app when you push changes to GitHub:
 ```bash
 cd /var/www/christmas-list
 git pull
-npm install --production
+npm install
 npm run build
 pm2 restart christmas-list
 ```
+
+**Note:** We use `npm install` (not `--production`) because dev dependencies like Tailwind CSS are needed for the build.
 
 ## 📊 Monitoring
 

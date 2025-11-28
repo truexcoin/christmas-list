@@ -71,8 +71,8 @@ else
 fi
 
 echo ""
-echo "📦 Installing npm dependencies..."
-npm install --production
+echo "📦 Installing npm dependencies (including dev dependencies for build)..."
+npm install
 
 echo ""
 echo "⚙️  Creating .env file..."

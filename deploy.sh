@@ -27,8 +27,8 @@ echo "📥 Pulling latest changes..."
 git pull
 
 echo ""
-echo "📦 Installing dependencies..."
-npm install --production
+echo "📦 Installing dependencies (including dev dependencies for build)..."
+npm install
 
 echo ""
 echo "🔨 Building application (standalone mode)..."

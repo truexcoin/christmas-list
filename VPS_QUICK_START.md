@@ -132,10 +132,12 @@ Or manually:
 ```bash
 cd /var/www/christmas-list
 git pull
-npm install --production
+npm install
 npm run build
 pm2 restart christmas-list
 ```
+
+**Note:** We use `npm install` (not `--production`) because dev dependencies like Tailwind CSS are needed for the build process.
 
 ## 📊 Useful Commands
 
