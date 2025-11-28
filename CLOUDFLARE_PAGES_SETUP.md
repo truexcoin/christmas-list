@@ -41,6 +41,7 @@ id = "your-actual-namespace-id-here"
    - **Framework preset:** Next.js
    - **Build command:** `npm run pages:build`
    - **Build output directory:** `.vercel/output/static`
+   - **Deploy command:** `wrangler pages deploy .vercel/output/static --project-name=christmas-list`
    - **Root directory:** `/` (leave empty)
 6. Click **Save and Deploy**
 
