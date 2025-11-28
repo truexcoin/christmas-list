@@ -157,7 +157,7 @@ git push origin main
    |----------|-------------|----------|
    | `ADMIN_PASSWORD` | Admin panel password | ✅ Yes |
    | `JWT_SECRET` | Secret for JWT tokens | ✅ Yes |
-   | `REDIS_URL` | Redis connection URL (optional - uses Vercel KV if not set) | ❌ Optional |
+   | `REDIS_URL` | Redis connection URL | ❌ Optional |
    | `GEMINI_API_KEY` | Google Gemini API key | ❌ Optional |
 
 4. **Deploy**
@@ -166,35 +166,25 @@ git push origin main
    - Wait for the build to complete
    - Your app will be live at `your-project.vercel.app`
 
-### Setting up Storage (Required for Data Persistence)
+### Setting up Redis (Optional but Recommended)
 
-You can use either Vercel KV or Redis:
+For persistent storage, you can use:
 
-**Option 1: Vercel KV (Recommended for Vercel)**
+1. **Upstash Redis** (Free tier available)
+   - Sign up at [upstash.com](https://upstash.com)
+   - Create a Redis database
+   - Copy the `REDIS_URL` and add it to Vercel environment variables
 
-1. **Create Vercel KV Database**
-   - Go to your Vercel project → Storage tab
-   - Click "Create Database" → Select "KV"
-   - Name it (e.g., "christmas-list-kv")
-   - Click "Create"
+2. **Redis Cloud** (Free tier available)
+   - Sign up at [redis.com/try-free](https://redis.com/try-free)
+   - Create a database
+   - Copy the connection URL
 
-2. **Link to Your Project**
-   - The KV database will automatically be linked to your project
-   - Vercel automatically configures the `@vercel/kv` package
-   - No environment variables needed - it just works!
+3. **Self-hosted Redis**
+   - Set up your own Redis instance
+   - Add the connection URL to environment variables
 
-**Option 2: Redis (If you have existing data)**
-
-1. **Get Redis URL**
-   - Use your existing Redis instance (Upstash, Redis Cloud, etc.)
-   - Or create a new one at [upstash.com](https://upstash.com) (free tier available)
-
-2. **Add to Vercel**
-   - Go to your project → Settings → Environment Variables
-   - Add `REDIS_URL` with your Redis connection URL
-   - Redeploy your project
-
-**Note:** The app will use Vercel KV if available, otherwise Redis if `REDIS_URL` is set. Without either, data will reset on each deployment.
+**Note:** Without Redis, data will reset on each deployment. Redis is recommended for production.
 
 ### Setting up Gemini AI (Optional)
 
@@ -215,7 +205,7 @@ You can use either Vercel KV or Redis:
 - **Animations:** [Framer Motion](https://www.framer.com/motion/)
 - **Styling:** CSS Modules + Custom CSS Variables
 - **Authentication:** [jose](https://github.com/panva/jose) for JWT
-- **Storage:** Vercel KV or Redis (via `@vercel/kv` or `redis` package) or in-memory fallback
+- **Storage:** Redis (via `redis` package) or in-memory fallback
 - **AI:** [Google Gemini AI](https://ai.google.dev/) for deal finding and gift generation
 - **Deployment:** [Vercel](https://vercel.com)
 
@@ -309,12 +299,11 @@ npm run lint
 - Some image domains don't allow cross-origin canvas access
 - Try using images from CORS-enabled domains
 
-### Storage connection issues
+### Redis connection issues
 
-- **Vercel KV:** Make sure Vercel KV database is created and linked to your project
-- **Redis:** Verify `REDIS_URL` is correct and Redis server is accessible
-- Check `/api/status` to see which storage is being used
-- App will fall back to in-memory storage if neither is available
+- Verify `REDIS_URL` is correct
+- Check Redis server is running (if self-hosted)
+- App will fall back to in-memory storage if Redis fails
 
 ### AI features not working
 

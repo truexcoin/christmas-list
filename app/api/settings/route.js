@@ -1,15 +1,38 @@
 import { NextResponse } from 'next/server';
-import { getSettings, saveSettings } from '@/lib/store';
+import { createClient } from 'redis';
+
+const SETTINGS_KEY = 'christmas-list-settings';
+
+const defaultSettings = {
+  emoji: '🎄',
+  title: 'Christmas Wishlist',
+  subtitle: 'Click on any gift to see more details and where to buy',
+};
+
+let redis = null;
+
+async function getRedis() {
+  if (!redis && process.env.REDIS_URL) {
+    redis = await createClient({ url: process.env.REDIS_URL }).connect();
+  }
+  return redis;
+}
 
 // GET settings (public)
 export async function GET() {
   try {
-    const settings = await getSettings();
-    return NextResponse.json(settings);
+    const client = await getRedis();
+    
+    if (client) {
+      const data = await client.get(SETTINGS_KEY);
+      if (data) {
+        return NextResponse.json(JSON.parse(data));
+      }
+    }
+    
+    return NextResponse.json(defaultSettings);
   } catch (error) {
     console.error('Error fetching settings:', error);
-    const { getSettings } = await import('@/lib/store');
-    const defaultSettings = await getSettings();
     return NextResponse.json(defaultSettings);
   }
 }
@@ -17,10 +40,20 @@ export async function GET() {
 // PUT update settings (should be auth protected in production)
 export async function PUT(request) {
   try {
+    const client = await getRedis();
+    
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Database not connected' },
+        { status: 500 }
+      );
+    }
+    
     const updates = await request.json();
     
     // Get current settings
-    const currentSettings = await getSettings();
+    const currentData = await client.get(SETTINGS_KEY);
+    const currentSettings = currentData ? JSON.parse(currentData) : defaultSettings;
     
     // Merge updates
     const newSettings = {
@@ -28,7 +61,7 @@ export async function PUT(request) {
       ...updates,
     };
     
-    await saveSettings(newSettings);
+    await client.set(SETTINGS_KEY, JSON.stringify(newSettings));
     
     return NextResponse.json(newSettings);
   } catch (error) {
