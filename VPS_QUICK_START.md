@@ -139,6 +139,23 @@ pm2 restart christmas-list
 
 **Note:** We use `npm install` (not `--production`) because dev dependencies like Tailwind CSS are needed for the build process.
 
+## 🔑 Changing Admin Password
+
+To change your admin password:
+
+```bash
+cd /var/www/christmas-list
+nano .env
+```
+
+Find `ADMIN_PASSWORD=` and change the value, then:
+
+```bash
+pm2 restart christmas-list
+```
+
+See `VPS_ADMIN_PASSWORD.md` for detailed instructions.
+
 ## 📊 Useful Commands
 
 ```bash
