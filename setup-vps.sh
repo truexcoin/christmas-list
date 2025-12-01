@@ -137,10 +137,19 @@ echo ""
 echo "🌐 Step 8/8: Configuring Nginx..."
 
 # Create Nginx config
+# Only use the exact domain provided - don't add www for subdomains
 if [ -z "$DOMAIN" ]; then
     SERVER_NAME="_"
 else
-    SERVER_NAME="$DOMAIN www.$DOMAIN"
+    # If it's a subdomain (contains a dot before the main domain), use as-is
+    # Otherwise, add www variant for root domains
+    if [[ "$DOMAIN" == *.*.* ]]; then
+        # Subdomain like list.truexsystems.com - use as-is
+        SERVER_NAME="$DOMAIN"
+    else
+        # Root domain like truexsystems.com - add www
+        SERVER_NAME="$DOMAIN www.$DOMAIN"
+    fi
 fi
 
 cat > /etc/nginx/sites-available/christmas-list << EOF
